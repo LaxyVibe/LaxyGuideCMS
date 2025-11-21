@@ -1,6 +1,6 @@
 ---
 en:
-  title: test en
+  title: test en 2
   slug: test
   category: painting
   body: test en
