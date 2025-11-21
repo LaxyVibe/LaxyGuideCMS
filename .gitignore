@@ -1,0 +1,10 @@
+# Git Configuration for Museum Guide CMS
+
+# Add this to your .gitignore file
+node_modules/
+.env
+.DS_Store
+Thumbs.db
+*.log
+dist/
+.cache/

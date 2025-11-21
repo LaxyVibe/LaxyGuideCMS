@@ -1,0 +1,45 @@
+backend:
+  name: local
+  local_backend: true
+
+media_folder: public/media
+public_folder: /media
+
+publish_mode: editorial_workflow
+
+collections:
+  - name: displayItems
+    label: Display Items
+    label_singular: Display Item
+    folder: content/displayItems
+    create: true
+    slug: "{{slug}}"
+    preview_path: "display/{{slug}}"
+    sortable_fields: ["title", "year"]
+    view_filters:
+      - label: Paintings
+        field: category
+        pattern: painting
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Short Title, name: shortTitle, widget: string, required: false }
+      - { label: Slug, name: slug, widget: string, pattern: ['^[a-z0-9-]+$', 'Use lowercase, numbers, hyphens'] }
+      - { label: Category, name: category, widget: select, options: [painting, sculpture, artifact, document, interactive, other] }
+      - { label: Year, name: year, widget: number, value_type: int, required: false, hint: 'Approximate year' }
+      - { label: Location Code, name: location, widget: string }
+      - label: Coordinates
+        name: coordinates
+        widget: object
+        fields:
+          - { label: Latitude, name: lat, widget: number, required: false }
+          - { label: Longitude, name: lng, widget: number, required: false }
+      - { label: Tags, name: tags, widget: list, summary: '{{fields.item}}', required: false }
+      - label: Images
+        name: images
+        widget: list
+        required: false
+        field: { label: Image, name: image, widget: image }
+      - { label: Audio Guide, name: audio, widget: file, required: false }
+      - { label: Description, name: body, widget: markdown }
+
+# For production, replace backend above with git-gateway or github and remove local_backend.
