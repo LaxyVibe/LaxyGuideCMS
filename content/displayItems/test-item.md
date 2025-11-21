@@ -6,6 +6,6 @@ category: sculpture
 year: 1933
 location: HK
 images:
-  - /media/螢幕截圖-2025-11-21-下午1.15.07.png
+  - https://res.cloudinary.com/dui2mxeuh/image/upload/v1756714700/thumbnail_202009181707159330_9caf94c763.jpg
 ---
 this is a test content
