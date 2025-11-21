@@ -7,12 +7,12 @@ year: 1892
 location: ROOM-12
 coordinates:
   lat: 40.7128
-  lng: -74.0060
+  lng: -74.006
 tags:
   - bronze
   - historic
 images:
-  - media/sample.jpg
+  - https://res.cloudinary.com/dui2mxeuh/image/upload/v1756676007/thumbnail_202508261152373279_8902e8a3be.jpg
 audio: media/sample.mp3
 ---
 
