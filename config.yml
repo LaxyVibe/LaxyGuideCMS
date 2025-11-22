@@ -1,5 +1,5 @@
 backend:
-  name: github
+  name: git-gateway
   repo: LaxyVibe/LaxyGuideCMS
   branch: main
 publish_mode: editorial_workflow
