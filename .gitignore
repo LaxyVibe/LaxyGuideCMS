@@ -8,3 +8,6 @@ Thumbs.db
 *.log
 dist/
 .cache/
+
+# Local Netlify folder
+.netlify

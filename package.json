@@ -6,7 +6,11 @@
     "start": "serve -l 3000"
   },
   "dependencies": {
-    "serve": "14.2.1",
-    "decap-cms": "^3.0.0"
+    "decap-cms": "^3.0.0",
+    "node-fetch": "^3.3.2",
+    "serve": "14.2.1"
+  },
+  "devDependencies": {
+    "netlify-cli": "^23.11.1"
   }
 }

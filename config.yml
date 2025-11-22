@@ -1,5 +1,5 @@
 backend:
-  name: git-gateway
+  name: github
   repo: LaxyVibe/LaxyGuideCMS
   branch: main
 publish_mode: editorial_workflow
@@ -49,7 +49,7 @@ collections:
         required: false
         i18n: false
         field: { label: Image, name: image, widget: image }
-      - { label: Audio Guide, name: audio, widget: file, required: false, i18n: false }
+      - { label: Audio Guide, name: audio, widget: audioGuide, required: false, i18n: false }
       - { label: Description, name: body, widget: markdown, i18n: true }
   - name: events
     label: Events

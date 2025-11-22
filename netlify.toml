@@ -1,0 +1,10 @@
+[build]
+  # Your site is static (index.html + admin/ + content/)
+  publish = "."
+  functions = "netlify/functions"
+
+[dev]
+  # No custom dev command, just serve the static files from `publish`
+  command = ""
+  port = 8888
+  publish = "."
