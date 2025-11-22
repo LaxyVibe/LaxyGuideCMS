@@ -4,9 +4,75 @@
   <meta charset="utf-8" />
   <title>Decap CMS | Laxy Guide</title>
   <meta name="viewport" content="width=device-width" />
+  <style>
+    .laxy-cms-title { 
+      font-size: 16px; 
+      font-weight: 600; 
+      margin: 0 1rem 0 0; 
+      padding: 4px 10px; 
+      background: #111; 
+      color: #fff; 
+      border-radius: 4px; 
+      line-height: 1; 
+      display: inline-flex; 
+      align-items: center; 
+      font-family: system-ui, sans-serif;
+    }
+    /* Ensure header has space */
+    header .laxy-cms-title { order: -1; }
+    /* Pre-login logo image styling - updated size and color */
+    .laxy-prelogin-logo img { 
+      display: block; 
+      width: 320px; 
+      max-width: 100%; 
+      height: auto; 
+      /* Convert logo to black */
+      filter: brightness(0) saturate(100%); 
+    }
+  </style>
 </head>
 <body>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <script src="https://unpkg.com/decap-cms@3.9.0/dist/decap-cms.js"></script>
+  <script>
+    (function() {
+      function injectTitle() {
+        const header = document.querySelector('header');
+        if (!header) return;
+        // Avoid duplicate injection
+        if (header.querySelector('.laxy-cms-title')) return;
+        // Find container that wraps nav (second level div?)
+        // Use first direct descendant div if present
+        const container = header.querySelector('div');
+        if (!container) return;
+        const titleEl = document.createElement('span');
+        titleEl.className = 'laxy-cms-title';
+        titleEl.textContent = 'Laxy Guide Studio';
+        // Insert before nav list
+        const nav = container.querySelector('nav');
+        if (nav) {
+          container.insertBefore(titleEl, nav);
+        } else {
+          container.prepend(titleEl);
+        }
+      }
+      function replacePreLoginLogo() {
+        // Target the Decap logo span before authentication screen
+        const logoSpan = document.querySelector("span[class*='DecapLogoIcon']");
+        if (logoSpan && !logoSpan.dataset.laxyLogoReplaced) {
+          logoSpan.classList.add('laxy-prelogin-logo');
+          logoSpan.innerHTML = '';
+          const img = document.createElement('img');
+          img.src = 'https://guide.laxy.travel/assets/travel-Dcyy3aKV.svg';
+          img.alt = 'Laxy Guide';
+          logoSpan.appendChild(img);
+          logoSpan.dataset.laxyLogoReplaced = 'true';
+        }
+      }
+      const observer = new MutationObserver(() => { injectTitle(); replacePreLoginLogo(); });
+      observer.observe(document.body, { childList: true, subtree: true });
+      document.addEventListener('DOMContentLoaded', () => { injectTitle(); replacePreLoginLogo(); });
+    })();
+  </script>
 </body>
 </html>
