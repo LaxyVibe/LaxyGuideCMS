@@ -1,12 +1,12 @@
 ---
 en:
-  title: test en 2
+  title: test en 123
   slug: test
   category: painting
   body: test en
   location: HK
   images:
-    - https://res.cloudinary.com/dui2mxeuh/image/upload/v1756714700/thumbnail_202009181707159330_9caf94c763.jpg
+    - https://res.cloudinary.com/dui2mxeuh/image/upload/v1752475126/medium_Hachiman_Kamado_Shrine01_93018e74bf.jpg
 jp:
   title: test jp
 kr:
