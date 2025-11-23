@@ -1,0 +1,87 @@
+export const config = {
+    backend: {
+        name: 'github',
+        repo: 'LaxyVibe/LaxyGuideCMS',
+        branch: 'main',
+    },
+    media_folder: 'public/media',
+    public_folder: '/media',
+    media_library: {
+        name: 'cloudinary',
+        config: {
+            cloud_name: 'dui2mxeuh',
+            api_key: '569778884527558',
+        },
+    },
+    i18n: {
+        structure: 'single_file',
+        locales: ['en', 'jp', 'kr', 'zh', 'zh-tw'],
+        default_locale: 'en',
+    },
+    collections: [
+        {
+            name: 'knowledgeBase',
+            identifier_field: 'slug',
+            label: 'Knowledge Base',
+            folder: 'content/knowledgeBase',
+            i18n: true,
+            create: true,
+            slug: '{{slug}}',
+            preview_path: 'knowledge/{{slug}}',
+            sortable_fields: ['name'],
+            fields: [
+                { label: 'Name', name: 'name', widget: 'string', i18n: 'translate' },
+                {
+                    label: 'Slug',
+                    name: 'slug',
+                    widget: 'string',
+                    pattern: ['^[a-z0-9-]+$', 'Use lowercase, numbers, hyphens'],
+                    i18n: false,
+                },
+                {
+                    label: 'Content Type',
+                    name: 'contentType',
+                    widget: 'select',
+                    options: ['article', 'guide', 'reference', 'profile', 'overview'],
+                    i18n: false,
+                },
+                { label: 'Tags', name: 'tags', widget: 'list', required: false, i18n: false },
+                {
+                    label: 'Key Facts & Information',
+                    name: 'keyFacts',
+                    widget: 'list',
+                    i18n: true,
+                    fields: [
+                        { label: 'Fact Title', name: 'title', widget: 'string' },
+                        { label: 'Fact Detail', name: 'detail', widget: 'markdown' },
+                    ],
+                },
+                {
+                    label: 'Points of Interest',
+                    name: 'pointsOfInterest',
+                    widget: 'list',
+                    i18n: true,
+                    fields: [
+                        { label: 'Point', name: 'point', widget: 'string' },
+                        { label: 'Description', name: 'description', widget: 'string', required: false },
+                        { label: 'Content', name: 'content', widget: 'markdown', required: false },
+                    ],
+                },
+                { label: 'Description', name: 'body', widget: 'markdown', i18n: true },
+            ],
+        },
+        {
+            name: 'travelGuide',
+            label: 'Travel Guide',
+            folder: 'content/travelGuide/{{locale}}',
+            i18n: true,
+            create: true,
+            slug: '{{slug}}',
+            preview_path: 'travel/{{slug}}',
+            fields: [
+                { label: 'Title', name: 'title', widget: 'string', i18n: 'translate' },
+                { label: 'Audio Guide', name: 'audio', widget: 'CreateAudioGuide', required: false, i18n: false },
+            ],
+        },
+    ],
+};
