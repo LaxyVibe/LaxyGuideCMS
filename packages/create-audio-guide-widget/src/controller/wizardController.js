@@ -83,8 +83,9 @@ function mapLanguageToLocale(lang) {
   const map = { English: 'en', Japanese: 'jp', Korean: 'kr', Chinese: 'zh', French: 'fr', Spanish: 'es' };
   return map[lang] || 'en';
 }
-const h = (window.CMS && window.CMS.h) || window.h;
-const createClass = (window.CMS && window.CMS.createClass) || window.createClass;
+import CMS from 'decap-cms';
+const h = CMS.h;
+const createClass = CMS.createClass;
 import { WizardShell } from '../views/WizardShell';
 export const CreateAudioGuideControl = createClass({
   getInitialState() {

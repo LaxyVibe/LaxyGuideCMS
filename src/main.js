@@ -1,5 +1,6 @@
+import CMS from 'decap-cms';
 import { config } from './config';
-import '../packages/create-audio-guide-widget/src/index.js';
+import { CreateAudioGuideControl, CreateAudioGuidePreview } from '../packages/create-audio-guide-widget/src/controller/wizardController';
 
 // Fallback load for Netlify Identity if global not present
 if (!window.netlifyIdentity) {
@@ -7,6 +8,10 @@ if (!window.netlifyIdentity) {
   s.src = 'https://identity.netlify.com/v1/netlify-identity-widget.js';
   document.head.appendChild(s);
 }
+
+// Register widget manually using the imported CMS instance
+// This avoids relying on window.CMS being populated immediately or race conditions
+CMS.registerWidget('CreateAudioGuide', CreateAudioGuideControl, CreateAudioGuidePreview);
 
 // Dynamic configuration based on environment
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -16,25 +21,13 @@ if (!isLocal) {
   // Production: Use git-gateway
   cmsConfig.backend = {
     name: 'git-gateway',
-    branch: 'main', // git-gateway uses the branch configured in Netlify, but this doesn't hurt
+    branch: 'main',
   };
 }
 
-// Initialize CMS manually
-// Note: We don't need to wait for DOMContentLoaded if we are in a module script at the end of body,
-// but it's safer to wait or check CMS existence.
-// Since we import 'decap-cms' (which attaches to window.CMS), we can init.
-// However, 'decap-cms' import might trigger auto-init if config.yml is found.
-// We will remove config.yml to prevent double init or conflict.
+// Initialize CMS
+CMS.init({ config: cmsConfig });
 
-if (window.CMS) {
-  window.CMS.init({ config: cmsConfig });
-} else {
-  // In case of race condition or different bundle structure
-  window.addEventListener('load', () => {
-    if (window.CMS) window.CMS.init({ config: cmsConfig });
-  });
-}
 
 
 // Inject title & replace pre-login logo (formerly IIFE)
