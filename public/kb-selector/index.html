@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Knowledge Base Selector</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; margin:16px; background:#fff; color:#111827; }
+    h1 { font-size:18px; margin:0 0 12px; }
+    .status { font-size:12px; margin-bottom:12px; color:#6b7280; }
+    .list { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+    .item { border:1px solid #e5e7eb; border-radius:6px; padding:10px; background:#f9fafb; display:flex; flex-direction:column; gap:6px; }
+    .item h3 { font-size:13px; margin:0; font-weight:600; }
+    button.select { cursor:pointer; border:none; background:#111827; color:#fff; padding:6px 10px; font-size:12px; border-radius:4px; }
+    .error { color:#b91c1c; font-size:12px; margin-top:6px; }
+    .search { margin:0 0 12px; display:flex; gap:8px; }
+    .search input { flex:1; padding:6px 8px; font-size:13px; border:1px solid #d1d5db; border-radius:4px; }
+    .pill { font-size:10px; background:#e5e7eb; padding:2px 6px; border-radius:10px; margin-left:4px; }
+  </style>
+</head>
+<body>
+  <h1>Select Knowledge Base</h1>
+  <div class="status" id="status">Loading knowledge bases...</div>
+  <div class="search">
+    <input id="search" type="text" placeholder="Filter by name or slug" aria-label="Filter knowledge bases" />
+  </div>
+  <div class="list" id="kbList"></div>
+  <script>
+    const GITHUB_REPO = 'LaxyVibe/LaxyGuideCMS';
+    const KB_BASE_PATH = 'content/knowledgeBase';
+    const statusEl = document.getElementById('status');
+    const listEl = document.getElementById('kbList');
+    const searchEl = document.getElementById('search');
+    let allItems = [];
+
+    function setStatus(msg) { statusEl.textContent = msg; }
+
+    function parseFrontmatter(raw) {
+      if (typeof raw !== 'string') return {}; if (!raw.startsWith('---')) return {}; const end = raw.indexOf('\n---', 3); if (end === -1) return {}; const fm = raw.substring(3, end).trim(); const obj = {}; fm.split(/\r?\n/).forEach(line => { const m = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/); if (m) { let val = m[2].trim(); val = val.replace(/^['"]|['"]$/g,''); obj[m[1]] = val; } }); return obj; }
+
+    function fetchRootFiles() {
+      const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${KB_BASE_PATH}`;
+      return fetch(apiUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } })
+        .then(r => { if (!r.ok) throw new Error('List failed ' + r.status); return r.json(); })
+        .then(items => { if (!Array.isArray(items)) return []; const mdFiles = items.filter(f => f.type === 'file' && /\.md$/i.test(f.name)); return Promise.all(mdFiles.map(f => fetch(f.download_url).then(r => r.text()).then(text => { const fm = parseFrontmatter(text); const name = fm.name || fm.title || f.name.replace(/\.md$/i,''); const slug = fm.slug || name.toLowerCase().replace(/[^a-z0-9]+/g,'-'); if (!name || !slug) return null; return { name, slug }; }).catch(()=>null))).then(arr => arr.filter(Boolean)); })
+        .catch(err => { console.warn('[KB Selector] root error', err); return []; });
+    }
+
+    function render(items) {
+      listEl.innerHTML = '';
+      if (!items.length) { listEl.innerHTML = '<div style="font-size:12px;color:#6b7280;">No items</div>'; return; }
+      items.forEach(i => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `<h3>${i.name}</h3><div style='font-size:11px;color:#6b7280;'>${i.slug}</div>`;
+        const btn = document.createElement('button');
+        btn.className = 'select';
+        btn.textContent = 'Select';
+        btn.addEventListener('click', () => selectKB(i.slug));
+        div.appendChild(btn);
+        listEl.appendChild(div);
+      });
+    }
+
+    function selectKB(slug) {
+      try { window.parent && window.parent.postMessage({ type: 'kb-select', slug }, window.location.origin); } catch(e) {}
+      setStatus('Selected: ' + slug + ' (message sent)');
+    }
+
+    function applyFilter() {
+      const q = searchEl.value.trim().toLowerCase();
+      if (!q) { render(allItems); return; }
+      render(allItems.filter(i => i.name.toLowerCase().includes(q) || i.slug.toLowerCase().includes(q)));
+    }
+
+    searchEl.addEventListener('input', applyFilter);
+
+    // Cache via sessionStorage
+    const cacheKey = 'kb-selector-cache-v2';
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      try { const parsed = JSON.parse(cached); if (Array.isArray(parsed) && parsed.length) { allItems = parsed; render(allItems); setStatus('Loaded from cache (' + allItems.length + ')'); } } catch(_) {}
+    }
+
+    fetchRootFiles()
+      .then(list => {
+        allItems = list.sort((a,b)=>a.name.localeCompare(b.name));
+        if (!allItems.length) { setStatus('No knowledge bases found'); render([]); return; }
+        render(allItems);
+        setStatus('Loaded ' + allItems.length + ' knowledge bases');
+        try { sessionStorage.setItem(cacheKey, JSON.stringify(allItems)); } catch(_) {}
+      })
+      .catch(err => { console.error(err); setStatus('Failed to load knowledge bases'); });
+  </script>
+</body>
+</html>

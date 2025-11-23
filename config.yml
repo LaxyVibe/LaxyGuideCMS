@@ -1,8 +1,7 @@
 backend:
-  name: git-gateway
+  name: github
   repo: LaxyVibe/LaxyGuideCMS
   branch: main
-publish_mode: editorial_workflow
 media_folder: public/media
 public_folder: /media
 # Use Cloudinary for media management
@@ -20,49 +19,43 @@ i18n:
 
   default_locale: en
 collections:
-  - name: displayItems
-    label: Display Items
-    folder: content/displayItems/{{locale}}
+  - name: knowledgeBase
+    identifier_field: slug
+    label: Knowledge Base
+    folder: content/knowledgeBase
     i18n: true
     create: true
     slug: "{{slug}}"
-    preview_path: "display/{{slug}}"
-    sortable_fields: ["title", "year"]
+    preview_path: "knowledge/{{slug}}"
+    sortable_fields: ["name"]
     fields:
-      - { label: Title, name: title, widget: string, i18n: translate }
-      - { label: Short Title, name: shortTitle, widget: string, required: false, i18n: translate }
+      - { label: Name, name: name, widget: string, i18n: translate }
       - { label: Slug, name: slug, widget: string, pattern: ['^[a-z0-9-]+$', 'Use lowercase, numbers, hyphens'], i18n: false }
-      - { label: Category, name: category, widget: select, options: [painting, sculpture, artifact, document, interactive, other], i18n: false }
-      - { label: Year, name: year, widget: number, value_type: int, required: false, hint: 'Approximate year', i18n: false }
-      - { label: Location Code, name: location, widget: string, i18n: false }
-      - label: Coordinates
-        name: coordinates
-        widget: object
-        i18n: false
-        fields:
-          - { label: Latitude, name: lat, widget: number, required: false }
-          - { label: Longitude, name: lng, widget: number, required: false }
-      - { label: Tags, name: tags, widget: list, summary: '{{fields.item}}', required: false, i18n: false }
-      - label: Images
-        name: images
-        widget: list
-        required: false
-        i18n: false
-        field: { label: Image, name: image, widget: image }
-      - { label: Audio Guide, name: audio, widget: audioGuide, required: false, i18n: false }
-      - { label: Description, name: body, widget: markdown, i18n: true }
-  - name: events
-    label: Events
-    folder: content/events/{{locale}}
-    i18n: true
-    create: true
-    slug: "{{slug}}"
-    preview_path: "event/{{slug}}"
-    fields:
-      - { label: Title, name: title, widget: string, i18n: translate }
-      - { label: Slug, name: slug, widget: string, pattern: ['^[a-z0-9-]+$', 'Use lowercase, numbers, hyphens'], i18n: false }
-      - { label: Date & Time, name: date, widget: datetime, format: 'YYYY-MM-DD HH:mm', i18n: false }
-      - { label: Location, name: location, widget: string, required: false, i18n: false }
-      - { label: Featured Image, name: image, widget: image, required: false, i18n: false }
+      - { label: Content Type, name: contentType, widget: select, options: [article, guide, reference, profile, overview], i18n: false }
       - { label: Tags, name: tags, widget: list, required: false, i18n: false }
+      - label: Key Facts & Information
+        name: keyFacts
+        widget: list
+        i18n: true
+        fields:
+          - { label: Fact Title, name: title, widget: string }
+          - { label: Fact Detail, name: detail, widget: markdown }
+      - label: Points of Interest
+        name: pointsOfInterest
+        widget: list
+        i18n: true
+        fields:
+          - { label: Point, name: point, widget: string }
+          - { label: Description, name: description, widget: string, required: false }
+          - { label: Content, name: content, widget: markdown, required: false }
       - { label: Description, name: body, widget: markdown, i18n: true }
+  - name: travelGuide
+    label: Travel Guide
+    folder: content/travelGuide/{{locale}}
+    i18n: true
+    create: true
+    slug: "{{slug}}"
+    preview_path: "travel/{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string, i18n: translate }
+      - { label: Audio Guide, name: audio, widget: CreateAudioGuide, required: false, i18n: false }
