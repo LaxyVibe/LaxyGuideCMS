@@ -57,8 +57,11 @@ export async function loadKnowledgeBases(force = false) {
   let apiUrl;
   let headers = {};
 
-  if (isLocal) {
-    // Local: Direct GitHub API
+  // Check if we have a Netlify Identity user (implies git-gateway usage)
+  const hasNetlifyUser = window.netlifyIdentity && window.netlifyIdentity.currentUser();
+
+  if (isLocal && !hasNetlifyUser) {
+    // Local: Direct GitHub API (only if not using git-gateway)
     apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${KB_BASE_PATH}`;
     headers = { 'Accept': 'application/vnd.github.v3+json', ...authHeaders() };
   } else {

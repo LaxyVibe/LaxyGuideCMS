@@ -3,9 +3,11 @@ const h = React.createElement;
 export function VoiceStyle({ state, ctrl }) {
   const s = state;
   const voices = [
-    { id: 'voice_sarah', title: 'Sarah - Professional Female', lang: 'English' },
-    { id: 'voice_david', title: 'David - Documentary Narrator', lang: 'English' },
-    { id: 'voice_emma', title: 'Emma - Enthusiastic Host', lang: 'English' }
+    { id: 'English_expressive_narrator', title: 'Expressive Narrator', lang: 'English' },
+    { id: 'male-qn-qingse', title: 'Young Male', lang: 'English/Chinese' },
+    { id: 'female-shaonv', title: 'Young Female', lang: 'English/Chinese' },
+    { id: 'presenter_male', title: 'Male Presenter', lang: 'English' },
+    { id: 'presenter_female', title: 'Female Presenter', lang: 'English' }
   ];
   const tones = ['Professional', 'Friendly', 'Dramatic', 'Casual', 'Educational'];
   const allFormats = ['MP3', 'M4A', 'WAV', 'OGG'];

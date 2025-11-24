@@ -22,26 +22,33 @@ async function fetchPOIsForKB(kbName, locale = 'en') {
     let target = localeMatches.find(x => x.code === locale) || localeMatches.find(x => x.code === 'en') || localeMatches[0];
     if (!target) return [];
     const localeBlock = fmBlock.substring(target.index, target.end);
-    const poiStartRegex = /^\s*pointsOfInterest:\s*$/m;
+
+    const poiStartRegex = /^(\s*)pointsOfInterest:\s*$/m;
     const startMatch = poiStartRegex.exec(localeBlock);
     if (!startMatch) return [];
+
+    const baseIndentLen = startMatch[1].length;
     const afterStart = localeBlock.substring(startMatch.index + startMatch[0].length);
     const lines = afterStart.split(/\r?\n/);
     const collected = [];
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (!line.trim()) { collected.push(line); continue; }
-      if (/^[A-Za-z0-9_-]+:\s*$/.test(line)) break;
+      const indentMatch = line.match(/^(\s*)/);
+      const indent = indentMatch ? indentMatch[1].length : 0;
+      if (indent <= baseIndentLen) break;
       collected.push(line);
     }
     const poiLines = collected;
-    const items = []; let current = null; let baseIndent = null;
+
+    const items = []; let current = null; let lastKey = null;
     poiLines.forEach(line => {
       const itemStart = line.match(/^(\s*)-\s*(.*)$/);
       if (itemStart) {
         if (current) items.push(current);
         current = {};
-        if (baseIndent === null) baseIndent = itemStart[1];
+        lastKey = null;
         const rest = itemStart[2].trim();
         if (rest) {
           const kv = rest.match(/^(point|title|name):\s*(.*)$/);
@@ -53,21 +60,48 @@ async function fetchPOIsForKB(kbName, locale = 'en') {
       if (current) {
         const prop = line.match(/^\s+([A-Za-z0-9_-]+):\s*(.*)$/);
         if (prop) {
+          const key = prop[1];
           let val = prop[2].trim();
-          val = val.replace(/^['"]|['"]$/g, '');
-          current[prop[1]] = val;
+          if (['>', '|', '>-', '|-'].includes(val)) {
+            current[key] = '';
+            lastKey = key;
+          } else {
+            current[key] = val.replace(/^['"]|['"]$/g, '');
+            lastKey = null;
+          }
+          return;
+        }
+        if (lastKey && current[lastKey] !== undefined) {
+          const trimmed = line.trim();
+          if (trimmed) {
+            current[lastKey] += (current[lastKey] ? '\n' : '') + trimmed;
+          } else {
+            current[lastKey] += '\n\n';
+          }
         }
       }
     });
     if (current) items.push(current);
+
     const slugify = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    const results = items.filter(i => i.point).map(i => ({
-      id: slugify(i.point) || i.point,
-      title: i.point,
-      subtitle: i.description || '',
-      duration: parseInt(i.duration, 10) || 5,
-      content: i.content || ''
-    }));
+    const results = items.filter(i => i.point).map(i => {
+      const slug = slugify(i.point) || i.point;
+      let idValue = slug;
+
+      if (locale === 'en' && i.content && i.content.trim().length > 0) {
+        // Remove markdown images and trim whitespace
+        const plainContent = i.content.replace(/!\[[^\]]*\]\([^)]*\)/g, '').trim();
+        idValue = `${i.point}: ${plainContent}`;
+      }
+
+      return {
+        id: idValue,
+        title: i.point,
+        subtitle: i.description || '',
+        duration: parseInt(i.duration, 10) || 5,
+        content: i.content || ''
+      };
+    });
     return results;
   } catch { return []; }
 }

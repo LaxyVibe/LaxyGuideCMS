@@ -18,13 +18,6 @@ CMS.registerWidget('CreateAudioGuide', Control, Preview);
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const cmsConfig = { ...config };
 
-if (!isLocal) {
-  // Production: Use git-gateway
-  cmsConfig.backend = {
-    name: 'git-gateway',
-    branch: 'main',
-  };
-}
 
 // Initialize CMS
 CMS.init({ config: cmsConfig });

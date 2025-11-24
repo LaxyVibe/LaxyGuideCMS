@@ -3,18 +3,28 @@ const h = React.createElement;
 export function ReviewExport({ state, ctrl }) {
   const s = state;
   if (!s.finalized && s.generationComplete) {
-    const fakeAudioUrl = 'https://cdn.example.com/audio/' + (s.guideTitle || 'guide').replace(/\s+/g, '-').toLowerCase() + '.mp3';
     const shareable = 'https://laxy.app/audio/' + (s.guideTitle || 'untitled-guide').replace(/\s+/g, '-').toLowerCase();
-    ctrl.setField('finalized', true); ctrl.setField('finalAudioUrl', fakeAudioUrl); ctrl.setField('shareableUrl', shareable); ctrl.setField('transcriptReady', !!s.includeTranscript);
+    ctrl.setField('finalized', true);
+    if (!s.finalAudioUrl) {
+      const fakeAudioUrl = 'https://cdn.example.com/audio/' + (s.guideTitle || 'guide').replace(/\s+/g, '-').toLowerCase() + '.mp3';
+      ctrl.setField('finalAudioUrl', fakeAudioUrl);
+    }
+    ctrl.setField('shareableUrl', shareable); ctrl.setField('transcriptReady', !!s.includeTranscript);
   }
   const selected = s.selectedPOIs || [];
-  const poiMetaMap = {
-    egyptianArtWing: { title: 'Egyptian Art Wing', duration: 8 }, americanWing: { title: 'American Wing', duration: 7 }, europeanPaintings: { title: 'European Paintings', duration: 10 }, greekRomanGalleries: { title: 'Greek & Roman Galleries', duration: 6 }, armsArmor: { title: 'Arms & Armor', duration: 5 }, rooftopGarden: { title: 'Rooftop Garden', duration: 4 }, greatHall: { title: 'Great Hall', duration: 3 }, templeDendur: { title: 'Temple of Dendur', duration: 6 }
-  };
-  const total = selected.reduce((sum, id) => { const m = poiMetaMap[id]; return sum + (m ? m.duration : 0); }, 0);
+  // POI metadata is not persisted, so we extract title from ID if possible or use default
+  const total = selected.length * 5; // Estimate 5 min per POI if unknown
   const exportFormats = Array.isArray(s.exportFormats) ? s.exportFormats : [];
   const toggleFormat = fmt => { const list = [...exportFormats]; const i = list.indexOf(fmt); if (i >= 0) list.splice(i, 1); else list.push(fmt); ctrl.setField('exportFormats', list); };
   function copyShareable() { if (navigator?.clipboard && s.shareableUrl) navigator.clipboard.writeText(s.shareableUrl).then(() => alert('Link copied')); }
+  function playAudio() {
+    if (s.finalAudioUrl) {
+      const a = new Audio(s.finalAudioUrl);
+      a.play().catch(e => alert('Playback failed: ' + e.message));
+    } else {
+      alert('Audio not generated yet');
+    }
+  }
   return h('div', null, [
     h('h3', { style: { fontSize: '14px', fontWeight: '600', margin: '0 0 12px' } }, 'Review & Export'),
     h('p', { style: { margin: '0 0 16px', fontSize: '12px', color: '#6b7280' } }, 'Preview and export your audio guide'),
@@ -28,15 +38,20 @@ export function ReviewExport({ state, ctrl }) {
         h('div', { style: { fontWeight: '600', marginBottom: '6px' } }, s.guideTitle || 'Untitled Guide'),
         h('div', null, total + ' minutes • ' + selected.length + ' locations • ' + (s.language || 'English')),
         h('div', { style: { marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' } }, [
-          h('button', { type: 'button', style: { padding: '6px 12px', fontSize: '11px', background: '#111827', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }, onClick: () => alert('Play preview (simulated)') }, 'Play Preview'),
+          h('button', { type: 'button', style: { padding: '6px 12px', fontSize: '11px', background: '#111827', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }, onClick: playAudio }, 'Play Preview'),
           h('span', { style: { fontSize: '11px', color: '#6b7280' } }, '0:00 / ' + (total + ':00'))
         ])
       ]),
       h('div', { style: { marginTop: '4px' } }, selected.map((id, i) => {
-        const m = poiMetaMap[id] || { title: id, duration: 0 }; return h('div', { key: id, style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', padding: '8px 10px', border: '1px solid #e5e7eb', borderRadius: '6px', marginBottom: '6px', background: '#fafafa' } }, [
+        // Extract title from "Name: Content" format
+        const title = id.indexOf(': ') > -1 ? id.split(': ')[0] : id;
+        // Truncate if too long (e.g. if it was just content)
+        const displayTitle = title.length > 50 ? title.substring(0, 50) + '...' : title;
+
+        return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', padding: '8px 10px', border: '1px solid #e5e7eb', borderRadius: '6px', marginBottom: '6px', background: '#fafafa' } }, [
           h('div', { style: { width: '20px', height: '20px', borderRadius: '10px', background: '#f3f4f6', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', color: '#374151' } }, String(i + 1)),
-          h('div', { style: { fontWeight: '600' } }, m.title),
-          h('div', { style: { marginLeft: 'auto', fontSize: '11px', color: '#6b7280' } }, m.duration + ' min')
+          h('div', { style: { fontWeight: '600' } }, displayTitle),
+          h('div', { style: { marginLeft: 'auto', fontSize: '11px', color: '#6b7280' } }, '5 min')
         ]);
       }))
     ]),
