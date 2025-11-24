@@ -1,6 +1,6 @@
 import CMS from 'decap-cms';
 import { config } from './config';
-import { CreateAudioGuideControl, CreateAudioGuidePreview } from '../packages/create-audio-guide-widget/src/controller/wizardController';
+import { createAudioGuideWidget } from '../packages/create-audio-guide-widget/src/controller/wizardController';
 
 // Fallback load for Netlify Identity if global not present
 if (!window.netlifyIdentity) {
@@ -11,7 +11,8 @@ if (!window.netlifyIdentity) {
 
 // Register widget manually using the imported CMS instance
 // This avoids relying on window.CMS being populated immediately or race conditions
-CMS.registerWidget('CreateAudioGuide', CreateAudioGuideControl, CreateAudioGuidePreview);
+const { Control, Preview } = createAudioGuideWidget(CMS);
+CMS.registerWidget('CreateAudioGuide', Control, Preview);
 
 // Dynamic configuration based on environment
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';

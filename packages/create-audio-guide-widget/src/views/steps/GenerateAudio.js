@@ -1,5 +1,5 @@
 import React from 'react';
-const h = (window.CMS && window.CMS.h) || React.createElement;
+const h = React.createElement;
 
 export function GenerateAudio({ state, ctrl }) {
   const s = state;

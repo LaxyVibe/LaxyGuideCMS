@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom/client';
 import { initialState, hydrate, serialize, persistableKeys } from '../model/state';
 import { loadKnowledgeBases } from '../services/githubKb';
 import { simulateGeneration } from '../services/audioGeneration';
@@ -75,7 +76,8 @@ function mapLanguageToLocale(lang) {
   return map[lang] || 'en';
 }
 
-export function CreateAudioGuideControl(props) {
+// Inner Widget Component (Functional, uses Local React Hooks)
+function AudioGuideWizard(props) {
   // Initialize state from props.value
   const [state, setState] = useState(() => hydrate(props.value));
 
@@ -184,10 +186,67 @@ export function CreateAudioGuideControl(props) {
   return React.createElement(WizardShell, { ctrl, state });
 }
 
-export function CreateAudioGuidePreview(props) {
-  const raw = props.value || '';
-  let out = {};
-  try { out = JSON.parse(raw); } catch { out.script = raw; }
-  return React.createElement('pre', { style: { fontSize: '12px', whiteSpace: 'pre-wrap', background: '#f9fafb', padding: '8px', border: '1px solid #e5e7eb', borderRadius: '4px' } }, JSON.stringify(out, null, 2));
+// Factory function to create widget components using the CMS instance
+// Factory function to create widget components using the CMS instance
+export function createAudioGuideWidget(CMS) {
+  // Use CMS.h if available, otherwise fallback to window.h or React.createElement
+  const h = CMS?.h || (typeof window !== 'undefined' && window.h) || React.createElement;
+
+  class Control extends React.Component {
+    constructor(props) {
+      super(props);
+      this.mountRef = React.createRef();
+      this.root = null;
+    }
+
+    componentDidMount() {
+      if (this.mountRef.current) {
+        this.root = ReactDOM.createRoot(this.mountRef.current);
+        this.root.render(React.createElement(AudioGuideWizard, this.props));
+      }
+    }
+
+    componentDidUpdate() {
+      if (this.root) {
+        this.root.render(React.createElement(AudioGuideWizard, this.props));
+      }
+    }
+
+    componentWillUnmount() {
+      if (this.root) {
+        this.root.unmount();
+      }
+    }
+
+    render() {
+      // Render a container using Decap's h (or fallback)
+      // We use a callback ref if h doesn't support object refs, but let's try object ref first.
+      // Actually, to be safe across React versions, let's use a callback ref wrapper if needed,
+      // but standard React.createRef works with most modern hyperscript implementations.
+      // However, if h is from a very old React, it might expect string refs or callback refs.
+      // Let's use a simple callback ref to be safe.
+      return h('div', {
+        className: 'laxy-audio-guide-widget',
+        ref: (el) => { this.mountRef.current = el; }
+      });
+    }
+  }
+
+  const Preview = (props) => {
+    const raw = props.value || '';
+    let out = {};
+    try { out = JSON.parse(raw); } catch { out.script = raw; }
+    return h('pre', { style: { fontSize: '12px', whiteSpace: 'pre-wrap', background: '#f9fafb', padding: '8px', border: '1px solid #e5e7eb', borderRadius: '4px' } }, JSON.stringify(out, null, 2));
+  };
+
+  return { Control, Preview };
 }
 
+// Keep named exports for backwards compatibility if needed
+// We check if window.CMS is available and has what we need, otherwise export null or a placeholder
+const globalCMS = (typeof window !== 'undefined' && window.CMS) ? window.CMS : null;
+// Only try to create if globalCMS exists, otherwise export nulls (which is fine if not used)
+const globalWidgets = globalCMS ? createAudioGuideWidget(globalCMS) : { Control: null, Preview: null };
+
+export const CreateAudioGuideControl = globalWidgets.Control;
+export const CreateAudioGuidePreview = globalWidgets.Preview;

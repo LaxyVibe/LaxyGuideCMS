@@ -4,7 +4,7 @@ import { VoiceStyle } from './steps/VoiceStyle';
 import { GenerateAudio } from './steps/GenerateAudio';
 import { ReviewExport } from './steps/ReviewExport';
 import React from 'react';
-const h = (window.CMS && window.CMS.h) || React.createElement;
+const h = React.createElement;
 export function WizardShell({ ctrl, state }) {
   if (!state.showDialog) {
     const summary = state.script ? state.script.slice(0, 40) + (state.script.length > 40 ? '…' : '') : 'No audio guide set';
