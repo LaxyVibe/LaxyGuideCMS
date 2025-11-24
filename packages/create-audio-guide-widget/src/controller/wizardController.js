@@ -1,6 +1,9 @@
+import React from 'react';
 import { initialState, hydrate, serialize, persistableKeys } from '../model/state';
 import { loadKnowledgeBases } from '../services/githubKb';
 import { simulateGeneration } from '../services/audioGeneration';
+import { WizardShell } from '../views/WizardShell';
+
 // Add dynamic POI fetch helper (GitHub raw fetch similar to KB list)
 const POI_REPO = 'LaxyVibe/LaxyGuideCMS';
 const POI_BASE_PATH = 'content/knowledgeBase';
@@ -83,17 +86,29 @@ function mapLanguageToLocale(lang) {
   const map = { English: 'en', Japanese: 'jp', Korean: 'kr', Chinese: 'zh', French: 'fr', Spanish: 'es' };
   return map[lang] || 'en';
 }
-import CMS from 'decap-cms';
-const h = CMS.h;
-const createClass = CMS.createClass;
-import { WizardShell } from '../views/WizardShell';
-export const CreateAudioGuideControl = createClass({
-  getInitialState() {
+
+export class CreateAudioGuideControl extends React.Component {
+  constructor(props) {
+    super(props);
     const base = hydrate(this.props.value);
-    return { ...base };
-  },
-  componentDidUpdate(prev) {
-    if (this.props.value !== prev.value) {
+    this.state = { ...base };
+
+    // Bind methods
+    this.openDialog = this.openDialog.bind(this);
+    this.closeDialog = this.closeDialog.bind(this);
+    this.persist = this.persist.bind(this);
+    this.setField = this.setField.bind(this);
+    this.toggle = this.toggle.bind(this);
+    this.setPOIs = this.setPOIs.bind(this);
+    this.next = this.next.bind(this);
+    this.prev = this.prev.bind(this);
+    this.refreshKB = this.refreshKB.bind(this);
+    this.refreshPOIs = this.refreshPOIs.bind(this);
+    this.startGeneration = this.startGeneration.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.value !== prevProps.value) {
       const hydrated = hydrate(this.props.value);
       // Preserve transient UI state so dialog remains open during field edits
       this.setState({
@@ -114,13 +129,14 @@ export const CreateAudioGuideControl = createClass({
         currentLocale: this.state.currentLocale
       });
     }
-  },
-  openDialog() { this.setState({ showDialog: true }); },
-  closeDialog() { this.setState({ showDialog: false }); },
-  persist() { this.props.onChange && this.props.onChange(serialize(this.state)); },
-  setField(key, value) { this.setState({ [key]: value }, () => this.persist()); },
-  toggle(key) { this.setField(key, !this.state[key]); },
-  setPOIs(list) { this.setField('selectedPOIs', list); },
+  }
+
+  openDialog() { this.setState({ showDialog: true }); }
+  closeDialog() { this.setState({ showDialog: false }); }
+  persist() { this.props.onChange && this.props.onChange(serialize(this.state)); }
+  setField(key, value) { this.setState({ [key]: value }, () => this.persist()); }
+  toggle(key) { this.setField(key, !this.state[key]); }
+  setPOIs(list) { this.setField('selectedPOIs', list); }
   next() {
     const current = this.state.step || 1;
     const nextStep = Math.min(5, current + 1);
@@ -129,14 +145,14 @@ export const CreateAudioGuideControl = createClass({
       this.refreshPOIs(false);
     }
     this.setState({ step: nextStep });
-  },
-  prev() { this.setState({ step: Math.max(1, (this.state.step || 1) - 1) }); },
+  }
+  prev() { this.setState({ step: Math.max(1, (this.state.step || 1) - 1) }); }
   refreshKB(force = false) {
     this.setState({ kbLoading: true, kbError: null });
     loadKnowledgeBases(force).then(list => {
       this.setState({ kbLoading: false, knowledgeBases: list, kbError: list.length ? null : 'No knowledge bases found' });
     }).catch(() => this.setState({ kbLoading: false, kbError: 'Failed to load knowledge bases' }));
-  },
+  }
   refreshPOIs(force = false) {
     const kb = this.state.knowledgeBase;
     if (!kb) { this.setState({ pois: [], poiError: 'Select knowledge base first', currentPoisKb: '', poiLoading: false }); return; }
@@ -146,13 +162,14 @@ export const CreateAudioGuideControl = createClass({
     fetchPOIsForKB(kb, locale).then(list => {
       this.setState({ poiLoading: false, pois: list, currentPoisKb: kb, currentLocale: locale, poiError: list.length ? null : 'No POIs found' });
     }).catch(() => this.setState({ poiLoading: false, poiError: 'Failed to load POIs', pois: [] }));
-  },
-  startGeneration() { simulateGeneration(this.state, (patch, cb) => this.setState(patch, cb), () => this.persist()); },
+  }
+  startGeneration() { simulateGeneration(this.state, (patch, cb) => this.setState(patch, cb), () => this.persist()); }
   render() { return WizardShell({ ctrl: this, state: this.state }); }
-});
-export const CreateAudioGuidePreview = createClass({
+}
+
+export class CreateAudioGuidePreview extends React.Component {
   render() {
     const raw = this.props.value || ''; let out = {}; try { out = JSON.parse(raw); } catch { out.script = raw; }
-    return h('pre', { style: { fontSize: '12px', whiteSpace: 'pre-wrap', background: '#f9fafb', padding: '8px', border: '1px solid #e5e7eb', borderRadius: '4px' } }, JSON.stringify(out, null, 2));
+    return React.createElement('pre', { style: { fontSize: '12px', whiteSpace: 'pre-wrap', background: '#f9fafb', padding: '8px', border: '1px solid #e5e7eb', borderRadius: '4px' } }, JSON.stringify(out, null, 2));
   }
-});
+}

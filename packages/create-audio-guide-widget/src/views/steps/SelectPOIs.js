@@ -1,13 +1,5 @@
-const getH = () => {
-  // Guard for SSR / build parsing
-  if (typeof window !== 'undefined') {
-    if (window.CMS && window.CMS.h) return window.CMS.h;
-    if (window.h) return window.h;
-  }
-  // Fallback noop hyperscript (returns null) to keep parse valid
-  return () => null;
-};
-const h = getH();
+import React from 'react';
+const h = React.createElement;
 
 export function SelectPOIs({ state, ctrl }) {
   const allPOIs = state.pois || [];
