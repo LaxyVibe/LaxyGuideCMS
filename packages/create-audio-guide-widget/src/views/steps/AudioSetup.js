@@ -1,5 +1,5 @@
 import React from 'react';
-const h = React.createElement;
+const h = (window.CMS && window.CMS.h) || React.createElement;
 export function AudioSetup({ state, ctrl }) {
   const s = state;
   const categories = ['', 'Museum Tour', 'Art Walk', 'Historic Route', 'Nature Trail'];

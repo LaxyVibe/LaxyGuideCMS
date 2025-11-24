@@ -1,21 +1,9 @@
-const getH = () => {
-  // Guard for SSR / build parsing
-  if (typeof window !== 'undefined') {
-    if (window.CMS && window.CMS.h) return window.CMS.h;
-    if (window.h) return window.h;
-  }
-  // Fallback noop hyperscript (returns null) to keep parse valid
-  return () => null;
-};
-const h = getH();
+import React from 'react';
+const h = (window.CMS && window.CMS.h) || React.createElement;
 
 export function GenerateAudio({ state, ctrl }) {
   const s = state;
-  // Trigger generation if not started
-  if (!s.generationStarted && typeof window !== 'undefined') {
-    // Use setTimeout to avoid side-effects during render
-    setTimeout(() => ctrl.startGeneration(), 0);
-  }
+  // Generation is now triggered by componentDidUpdate in the controller, not here.
 
   const selected = s.selectedPOIs || [];
   const allPOIs = s.pois || [];

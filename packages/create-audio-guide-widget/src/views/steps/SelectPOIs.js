@@ -1,5 +1,5 @@
 import React from 'react';
-const h = React.createElement;
+const h = (window.CMS && window.CMS.h) || React.createElement;
 
 export function SelectPOIs({ state, ctrl }) {
   const allPOIs = state.pois || [];
