@@ -14,9 +14,21 @@ function parseFrontmatter(raw) {
 
 function getCmsAuthToken() {
   if (typeof window === 'undefined') return null;
+
+  // 1. Try Netlify Identity (preferred for git-gateway)
+  if (window.netlifyIdentity) {
+    const user = window.netlifyIdentity.currentUser();
+    if (user?.token?.access_token) {
+      return user.token.access_token;
+    }
+  }
+
+  // 2. Try LocalStorage (fallback or for other backends)
   try {
     const raw = localStorage.getItem('netlify-cms-user') || localStorage.getItem('decap-cms-user');
-    if (!raw) return null; const parsed = JSON.parse(raw); return parsed && parsed.token ? parsed.token : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.token || null;
   } catch { return null; }
 }
 
