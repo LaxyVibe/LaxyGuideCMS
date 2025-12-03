@@ -1,6 +1,6 @@
 export const config = {
     backend: {
-        name: 'github',
+        name: 'git-gateway',
         repo: 'LaxyVibe/LaxyGuideCMS',
         branch: 'main',
     },
