@@ -24,11 +24,24 @@ exports.handler = async function (event) {
         }
 
         // 1. Authenticate with Google Cloud
-        // Expects GOOGLE_APPLICATION_CREDENTIALS_JSON env var containing the service account key
-        // or standard Google Cloud env vars.
+        // Construct credentials from individual environment variables
+        const credentials = {
+            type: process.env.GOOGLE_TYPE,
+            project_id: process.env.GOOGLE_PROJECT_ID,
+            private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+            private_key: process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            client_id: process.env.GOOGLE_CLIENT_ID,
+            auth_uri: process.env.GOOGLE_AUTH_URI,
+            token_uri: process.env.GOOGLE_TOKEN_URI,
+            auth_provider_x509_cert_url: process.env.GOOGLE_AUTH_PROVIDER_CERT_URL,
+            client_x509_cert_url: process.env.GOOGLE_CLIENT_CERT_URL,
+            universe_domain: process.env.GOOGLE_UNIVERSE_DOMAIN,
+        };
+
         const auth = new GoogleAuth({
             scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-            credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || '{}'),
+            credentials,
         });
 
         const client = await auth.getClient();
@@ -37,23 +50,27 @@ exports.handler = async function (event) {
         // 2. Call Vertex AI Search API
         // Using the endpoint provided by the user
         const projectId = '683838849728';
-        const engineId = 'guide-knowledge-base_1764736885981';
+        const engineId = 'guide-knowledge-base_1764745841706';
         const endpoint = `https://discoveryengine.googleapis.com/v1alpha/projects/${projectId}/locations/global/collections/default_collection/engines/${engineId}/servingConfigs/default_search:search`;
 
+        console.log(`Searching for: ${name}`);
+
         const body = {
-            query: `Write a short description for: ${name}`, // Use the name as the query
-            pageSize: 1, // We only need the top result or summary
+            query: name,
+            pageSize: 10,
             queryExpansionSpec: { condition: 'AUTO' },
             spellCorrectionSpec: { mode: 'AUTO' },
             contentSearchSpec: {
                 snippetSpec: { returnSnippet: true },
+                extractiveContentSpec: { maxExtractiveAnswerCount: 1 },
                 summarySpec: {
                     summaryResultCount: 1,
                     includeCitations: false,
-                    ignoreAdversarialQuery: true,
-                    ignoreNonSummarySeekingQuery: true,
+                    ignoreAdversarialQuery: false,
+                    ignoreNonSummarySeekingQuery: false,
                 }
             },
+            userInfo: { timeZone: 'Asia/Hong_Kong' },
             languageCode: 'en-GB',
         };
 
@@ -76,7 +93,8 @@ exports.handler = async function (event) {
         }
 
         const data = await resp.json();
-
+        console.log('Vertex AI Search response:');
+        console.log(data)
         // 3. Extract Description
         // Try to get the summary first, otherwise fall back to the first result's snippet
         let description = '';
