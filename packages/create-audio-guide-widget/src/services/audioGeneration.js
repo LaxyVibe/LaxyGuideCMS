@@ -49,6 +49,7 @@ export function simulateGeneration(state, setState, doneCallback) {
           }
         } else {
           console.error('TTS generation failed', await resp.text());
+          throw new Error('TTS failed');
         }
       }
 
@@ -60,7 +61,8 @@ export function simulateGeneration(state, setState, doneCallback) {
       });
 
       idx++;
-      setTimeout(advance, 800); // Delay for visual pacing
+      // Only delay if NOT tts (since we already waited for the API), or keep a small delay for smooth transition
+      setTimeout(advance, current === 'tts' ? 100 : 800);
     } catch (err) {
       console.error('Generation step error', err);
       // Mark as error but proceed for now (or stop)

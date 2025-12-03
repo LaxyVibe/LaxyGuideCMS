@@ -1,0 +1,16 @@
+{
+    "name": "create-knowledge-widget",
+    "version": "1.0.0",
+    "description": "Custom Decap CMS widget for creating knowledge bases",
+    "main": "src/index.js",
+    "scripts": {
+        "dev": "npm run dev --prefix ../.."
+    },
+    "keywords": [
+        "decap-cms",
+        "widget",
+        "knowledge-base"
+    ],
+    "author": "",
+    "license": "MIT"
+}

@@ -37,10 +37,11 @@ export function ReviewExport({ state, ctrl }) {
       h('div', { style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '10px 12px', marginBottom: '14px', background: '#f9fafb', fontSize: '11px' } }, [
         h('div', { style: { fontWeight: '600', marginBottom: '6px' } }, s.guideTitle || 'Untitled Guide'),
         h('div', null, total + ' minutes • ' + selected.length + ' locations • ' + (s.language || 'English')),
-        h('div', { style: { marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' } }, [
-          h('button', { type: 'button', style: { padding: '6px 12px', fontSize: '11px', background: '#111827', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }, onClick: playAudio }, 'Play Preview'),
-          h('span', { style: { fontSize: '11px', color: '#6b7280' } }, '0:00 / ' + (total + ':00'))
-        ])
+        s.finalAudioUrl ? h('audio', {
+          controls: true,
+          src: s.finalAudioUrl,
+          style: { width: '100%', height: '36px', marginTop: '8px' }
+        }) : h('div', { style: { fontSize: '11px', color: '#6b7280', padding: '8px 0' } }, 'Audio generation pending...')
       ]),
       h('div', { style: { marginTop: '4px' } }, selected.map((id, i) => {
         // Extract title from "Name: Content" format

@@ -11,11 +11,26 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:create-react-class@^15.7.0",
         "npm:decap-cms@3",
+        "npm:google-auth-library@^10.5.0",
         "npm:netlify-cli@^23.11.1",
+        "npm:netlify-identity-widget@^1.9.2",
         "npm:node-fetch@^3.3.2",
-        "npm:serve@14.2.1"
+        "npm:react-dom@^18.2.0",
+        "npm:react@^18.2.0",
+        "npm:serve@14.2.1",
+        "npm:vite@5"
       ]
+    },
+    "members": {
+      "packages/create-audio-guide-widget": {
+        "packageJson": {
+          "dependencies": [
+            "npm:vite@5"
+          ]
+        }
+      }
     }
   }
 }

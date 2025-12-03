@@ -1,6 +1,6 @@
 export const config = {
     backend: {
-        name: 'git-gateway',
+        name: 'github',
         repo: 'LaxyVibe/LaxyGuideCMS',
         branch: 'main',
     },
@@ -30,57 +30,21 @@ export const config = {
             preview_path: 'knowledge/{{slug}}',
             sortable_fields: ['name'],
             fields: [
-                { label: 'Name', name: 'name', widget: 'string', i18n: 'translate' },
-                {
-                    label: 'Slug',
-                    name: 'slug',
-                    widget: 'string',
-                    pattern: ['^[a-z0-9-]+$', 'Use lowercase, numbers, hyphens'],
-                    i18n: false,
-                },
-                {
-                    label: 'Content Type',
-                    name: 'contentType',
-                    widget: 'select',
-                    options: ['article', 'guide', 'reference', 'profile', 'overview'],
-                    i18n: false,
-                },
-                { label: 'Tags', name: 'tags', widget: 'list', required: false, i18n: false },
-                {
-                    label: 'Key Facts & Information',
-                    name: 'keyFacts',
-                    widget: 'list',
-                    i18n: true,
-                    fields: [
-                        { label: 'Fact Title', name: 'title', widget: 'string' },
-                        { label: 'Fact Detail', name: 'detail', widget: 'markdown' },
-                    ],
-                },
-                {
-                    label: 'Points of Interest',
-                    name: 'pointsOfInterest',
-                    widget: 'list',
-                    i18n: true,
-                    fields: [
-                        { label: 'Point', name: 'point', widget: 'string' },
-                        { label: 'Description', name: 'description', widget: 'string', required: false },
-                        { label: 'Content', name: 'content', widget: 'markdown', required: false },
-                    ],
-                },
-                { label: 'Description', name: 'body', widget: 'markdown', i18n: true },
-            ],
+                { label: 'Title', name: 'title', widget: 'string', i18n: true },
+                { label: 'Knowledge', name: 'knowledge', widget: 'CreateKnowledge', required: false, i18n: true },
+            ]
         },
         {
             name: 'travelGuide',
             label: 'Travel Guide',
-            folder: 'content/travelGuide/{{locale}}',
+            folder: 'content/travelGuide',
             i18n: true,
             create: true,
             slug: '{{slug}}',
             preview_path: 'travel/{{slug}}',
             fields: [
-                { label: 'Title', name: 'title', widget: 'string', i18n: 'translate' },
-                { label: 'Audio Guide', name: 'audio', widget: 'CreateAudioGuide', required: false, i18n: false },
+                { label: 'Title', name: 'title', widget: 'string', i18n: true },
+                { label: 'Audio Guide', name: 'audioGuide', widget: 'CreateAudioGuide', required: false, i18n: true },
             ],
         },
     ],
