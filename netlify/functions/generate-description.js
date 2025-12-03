@@ -24,19 +24,20 @@ exports.handler = async function (event) {
         }
 
         // 1. Authenticate with Google Cloud
-        // Construct credentials from individual environment variables
+        // Use only essential secrets from env: private key and client email.
+        // Other non-sensitive fields are hardcoded here.
         const credentials = {
-            type: process.env.GOOGLE_TYPE,
-            project_id: process.env.GOOGLE_PROJECT_ID,
-            private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+            type: 'service_account',
+            project_id: process.env.GOOGLE_PROJECT_ID || 'laxy-guide',
+            private_key_id: '01ae51ebf02879c4030c4fed596c95110c8510bc',
             private_key: process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
             client_email: process.env.GOOGLE_CLIENT_EMAIL,
-            client_id: process.env.GOOGLE_CLIENT_ID,
-            auth_uri: process.env.GOOGLE_AUTH_URI,
-            token_uri: process.env.GOOGLE_TOKEN_URI,
-            auth_provider_x509_cert_url: process.env.GOOGLE_AUTH_PROVIDER_CERT_URL,
-            client_x509_cert_url: process.env.GOOGLE_CLIENT_CERT_URL,
-            universe_domain: process.env.GOOGLE_UNIVERSE_DOMAIN,
+            client_id: '112144368421874274595',
+            auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+            token_uri: 'https://oauth2.googleapis.com/token',
+            auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+            client_x509_cert_url: 'https://www.googleapis.com/robot/v1/metadata/x509/laxy-guide-knowledge-base-v2%40laxy-guide.iam.gserviceaccount.com',
+            universe_domain: 'googleapis.com',
         };
 
         const auth = new GoogleAuth({
