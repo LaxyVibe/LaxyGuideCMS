@@ -52,23 +52,28 @@ exports.handler = async function (event) {
         // Using the endpoint provided by the user
         const projectId = '683838849728';
         const engineId = 'guide-knowledge-base_1764745841706';
-        const endpoint = `https://discoveryengine.googleapis.com/v1alpha/projects/${projectId}/locations/global/collections/default_collection/engines/${engineId}/servingConfigs/default_search:search`;
+        const endpoint = `https://discoveryengine.googleapis.com/v1/projects/${projectId}/locations/global/collections/default_collection/engines/${engineId}/servingConfigs/default_search:search`;
 
         console.log(`Searching for: ${name}`);
 
         const body = {
             query: name,
-            pageSize: 10,
+            pageSize: 5,
             queryExpansionSpec: { condition: 'AUTO' },
             spellCorrectionSpec: { mode: 'AUTO' },
             contentSearchSpec: {
                 snippetSpec: { returnSnippet: true },
-                extractiveContentSpec: { maxExtractiveAnswerCount: 1 },
+                extractiveContentSpec: { maxExtractiveAnswerCount: 5, maxExtractiveSegmentCount: 1 },
                 summarySpec: {
-                    summaryResultCount: 1,
-                    includeCitations: false,
+                    summaryResultCount: 5,
+                    includeCitations: true,
                     ignoreAdversarialQuery: false,
                     ignoreNonSummarySeekingQuery: false,
+                    useSemanticChunks: true,
+                    modelSpec: { version: 'stable' },
+                    modelPromptSpec: {
+                        preamble: "Answer in one sentence."
+                    }
                 }
             },
             userInfo: { timeZone: 'Asia/Hong_Kong' },
@@ -97,16 +102,21 @@ exports.handler = async function (event) {
         console.log('Vertex AI Search response:');
         console.log(data)
         // 3. Extract Description
-        // Try to get the summary first, otherwise fall back to the first result's snippet
+        // Priority: Summary > Extractive Answer > Snippet
         let description = '';
 
         if (data.summary && data.summary.summaryText) {
             description = data.summary.summaryText;
         } else if (data.results && data.results.length > 0) {
-            // Fallback to snippet if no summary
             const firstResult = data.results[0];
-            if (firstResult.document && firstResult.document.derivedStructData && firstResult.document.derivedStructData.snippets) {
-                description = firstResult.document.derivedStructData.snippets[0].snippet;
+            const derived = firstResult.document?.derivedStructData;
+            
+            if (derived) {
+                if (derived.extractiveAnswers && derived.extractiveAnswers.length > 0) {
+                    description = derived.extractiveAnswers[0].content;
+                } else if (derived.snippets && derived.snippets.length > 0) {
+                    description = derived.snippets[0].snippet;
+                }
             }
         }
 
